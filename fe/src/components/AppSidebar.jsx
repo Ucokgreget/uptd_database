@@ -1,7 +1,8 @@
 import {
-    Sidebar
-    SidebarContent
-    SidebarFooter
+    Sidebar,
+    SidebarContent,
+    SidebarFooter,
+    SidebarGroup
 } from "@/components/ui/sidebar"
 
 const AppSidebar = () => {
