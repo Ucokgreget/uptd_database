@@ -1,16 +1,33 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Layout from "../components/Layout";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import api from "../lib/axios";
 
-const AddPegawai = () => {
+const EditPegawai = () => {
+  const { id } = useParams();
   const [nama, setNama] = useState("");
   const [nip, setNip] = useState("");
   const [noTelp, setNoTelp] = useState("");
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchPegawai = async () => {
+      try {
+        const res = await api.get(`/pegawai/${id}`);
+        const data = res.data;
+        setNama(data.nama || "");
+        setNip(data.nip || "");
+        setNoTelp(data.noTelp || "");
+      } catch (error) {
+        console.error("Error fetching pegawai:", error);
+        toast.error("Gagal memuat data pegawai");
+      }
+    };
+    fetchPegawai();
+  }, [id]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,32 +39,20 @@ const AddPegawai = () => {
 
     setLoading(true);
     try {
-      await api.post("/pegawai", {
+      await api.put(`/pegawai/${id}`, {
         nama,
         nip,
         noTelp,
       });
 
-      toast.success("Pegawai telah berhasil dibuat", {
+      toast.success("Pegawai telah berhasil diupdate", {
         duration: 4000,
         icon: "✅",
       });
       navigate("/pegawai");
     } catch (error) {
-      console.error("Error dari method POST:", error);
-      console.error(
-        "Detail Response Error:",
-        error.response?.data || error.message,
-      );
-
-      if (error.response?.status === 429) {
-        toast.error("Terlalu banyak aksi", {
-          duration: 4000,
-          icon: "😡",
-        });
-      } else {
-        toast.error("Gagal membuat pegawai");
-      }
+      console.error("Error dari method PUT:", error);
+      toast.error("Gagal mengupdate pegawai");
     } finally {
       setLoading(false);
     }
@@ -56,7 +61,7 @@ const AddPegawai = () => {
   return (
     <Layout>
       <h1 className="mb-8 text-3xl font-bold text-slate-900 tracking-tight">
-        Tambah Data Pegawai
+        Edit Data Pegawai
       </h1>
 
       <div className="mb-6 max-w-2xl bg-white border border-slate-200 rounded-xl shadow-sm p-6">
@@ -119,7 +124,7 @@ const AddPegawai = () => {
               className="btn btn-primary flex-1 rounded-lg bg-blue-600 py-2 font-semibold text-white transition-colors hover:bg-blue-700"
               disabled={loading}
             >
-              {loading ? "Loading..." : "Tambah Pegawai"}
+              {loading ? "Loading..." : "Update Pegawai"}
             </button>
           </div>
         </form>
@@ -128,4 +133,4 @@ const AddPegawai = () => {
   );
 };
 
-export default AddPegawai;
+export default EditPegawai;

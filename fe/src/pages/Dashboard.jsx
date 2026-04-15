@@ -1,10 +1,24 @@
 import { useState, useEffect } from "react";
-import Sidebar from "../components/Sidebar";
+import Layout from "../components/Layout";
 import api from "../lib/axios";
+import { Bar, BarChart, CartesianGrid, XAxis, Legend } from "recharts";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
 
 function Dashboard() {
   const [pegawai, setPegawai] = useState([]);
   const [client, setClient] = useState([]);
+  const [namaUser, setNamaUser] = useState("");
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -22,38 +36,118 @@ function Dashboard() {
     };
 
     fetchDashboardData();
+    const storedNama = localStorage.getItem("nama");
+    if (storedNama) setNamaUser(storedNama);
   }, []);
 
+  const currentYear = new Date().getFullYear();
+  const startYear = 2026;
+  const chartData = [];
+
+  for (let year = startYear; year <= currentYear; year++) {
+    if (year === currentYear) {
+      // Data tahun sekarang mengambil dari database riil
+      chartData.push({
+        year: year.toString(),
+        pegawai: pegawai.length,
+        client: client.length,
+      });
+    } else {
+      // Mockup untuk histori tahun-tahun sebelumnya
+      chartData.push({
+        year: year.toString(),
+        pegawai: Math.max(1, pegawai.length - (currentYear - year) * 2),
+        client: Math.max(2, client.length - (currentYear - year) * 3),
+      });
+    }
+  }
+
+  const chartConfig = {
+    pegawai: {
+      label: "Pegawai",
+      color: "#2563eb",
+    },
+    client: {
+      label: "Anak Panti",
+      color: "#16a34a",
+    },
+  };
+
   return (
-    <div className="flex min-h-screen bg-[#F2CDAA] font-['Segoe_UI',sans-serif]">
-      <Sidebar />
+    <Layout>
+      <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
+        Dashboard Utama
+      </h1>
+      <p className="mb-8 mt-2 text-lg text-slate-600 font-medium">
+        Halo, {namaUser || "User"}! 👋
+      </p>
 
-      <div className="flex-1 p-[40px]">
-        <h1 className="mb-[30px] text-[28px] font-bold text-[#3B2F2F]">
-          Selamat Datang Kembali Admin
-        </h1>
-
-        <div className="mb-[30px] flex gap-[20px]">
-          <div className="flex-1 rounded-[22px] bg-[#FFF3E6] p-[25px] text-center shadow-[0_14px_40px_rgba(0,0,0,0.18)]">
-            <h3 className="mb-[10px] text-[20px] font-semibold text-[#8b6a55]">
-              Total Pegawai
-            </h3>
-            <p className="text-[40px] font-bold text-[#6b4b3e]">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <Card className="border-slate-200 shadow-sm border-none bg-white">
+          <CardHeader className="pb-2">
+            <CardDescription className="text-slate-500 font-medium">
+              Total Pegawai Saat Ini
+            </CardDescription>
+            <CardTitle className="text-4xl font-bold text-blue-600">
               {pegawai.length || 0}
-            </p>
-          </div>
+            </CardTitle>
+          </CardHeader>
+        </Card>
 
-          <div className="flex-1 rounded-[22px] bg-[#FFF3E6] p-[25px] text-center shadow-[0_14px_40px_rgba(0,0,0,0.18)]">
-            <h3 className="mb-[10px] text-[20px] font-semibold text-[#8b6a55]">
-              Total Client
-            </h3>
-            <p className="text-[40px] font-bold text-[#6b4b3e]">
+        <Card className="border-slate-200 shadow-sm border-none bg-white">
+          <CardHeader className="pb-2">
+            <CardDescription className="text-slate-500 font-medium">
+              Total Client Saat Ini
+            </CardDescription>
+            <CardTitle className="text-4xl font-bold text-green-600">
               {client.length || 0}
-            </p>
-          </div>
-        </div>
+            </CardTitle>
+          </CardHeader>
+        </Card>
       </div>
-    </div>
+
+      <Card className="border-slate-200 shadow-sm bg-white border-none">
+        <CardHeader>
+          <CardTitle>Data Tahun Berjalan</CardTitle>
+          <CardDescription>
+            Statistik perbandingan jumlah pegawai dan anak panti pada tahun
+            berjalan.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ChartContainer
+            config={chartConfig}
+            className="min-h-[300px] w-full max-h-[400px]"
+          >
+            <BarChart data={chartData}>
+              <CartesianGrid vertical={false} stroke="#e2e8f0" />
+              <XAxis
+                dataKey="year"
+                tickLine={false}
+                tickMargin={10}
+                axisLine={false}
+                stroke="#64748b"
+              />
+              <ChartTooltip content={<ChartTooltipContent />} />
+              <Legend iconType="circle" />
+              <Bar
+                dataKey="pegawai"
+                fill="var(--color-pegawai)"
+                radius={[4, 4, 0, 0]}
+                maxBarSize={50}
+              />
+              <Bar
+                dataKey="client"
+                name="Anak Panti"
+                fill="var(--color-client)"
+                radius={[4, 4, 0, 0]}
+                maxBarSize={50}
+              />
+            </BarChart>
+          </ChartContainer>
+        </CardContent>
+      </Card>
+    </Layout>
   );
 }
 

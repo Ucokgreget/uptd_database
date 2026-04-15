@@ -1,23 +1,30 @@
-require('dotenv').config()
-const express = require("express");
-const mongoose = require("mongoose");
-const cors = require("cors");
-const connectDB = require("./config/connectDb");
+import "dotenv/config";
+import express from "express";
+import mongoose from "mongoose";
+import cors from "cors";
+// import connectDB from "./config/connectDb";
 
-const pegawaiRoute = require("./routes/pegawaiRoute");
-const clientRoute = require("./routes/clientRoute");
-const authRoutes = require("./routes/authRoute");
+import pegawaiRoute from "./routes/pegawaiRoute.js";
+import clientRoute from "./routes/clientRoute.js";
+import authRoutes from "./routes/authRoute.js";
+import userRoute from "./routes/userRoute.js";
 
 const app = express();
 
-
-app.use(cors());
 app.use(express.json());
+app.use(
+  cors({
+    origin: "*",
+    allowedHeaders: "*",
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  }),
+);
 
 // routes
 app.use("/api/auth", authRoutes);
 app.use("/api/pegawai", pegawaiRoute);
 app.use("/api/client", clientRoute);
+app.use("/api/users", userRoute);
 
 // test
 app.get("/", (req, res) => {
@@ -26,15 +33,6 @@ app.get("/", (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 
-const start = async () => {
-  try{
-    await connectDB(process.env.DATABABASE_URL);
-    app.listen(PORT, () => {
-      console.log(`Server berjalan di port ${PORT}`);
-    });
-  }catch(error){
-    console.log(error)
-  }
-}
-
-start()
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
+});

@@ -1,88 +1,91 @@
-const Pegawai = require("../models/pegawaiModel");
-const {createCustomError} = require("../error/custom-error")
+import { prisma } from "../lib/prisma.js";
+import { createCustomError } from "../error/custom-error.js";
 
-const getPegawai = async(req,res) => {
-    try{
-        const pegawai = await Pegawai.find();
-        res.status(200).json(pegawai)
-    }
-    catch(error){
-        res.status(400).json(error)
-    }
-}
+const getAllPegawai = async (req, res) => {
+  try {
+    const pegawai = await prisma.pegawai.findMany();
+    res.status(200).json(pegawai);
+  } catch (err) {
+    res.status(400).json({ msg: err });
+  }
+};
 
-const createPegawai = async(req, res) => {
-    try{
-        const {nama, nip, jabatan, unitKerja, email, noTelp} = req.body;
+const createPegawai = async (req, res) => {
+  try {
+    const { nama, nip, noTelp } = req.body;
 
-        const pegawai = new Pegawai({nama, nip, jabatan, unitKerja, email, noTelp})
-        
-        const savePegawai = await pegawai.save();
-        res.status(200).json(savePegawai);
-    }
-    catch(error){
-        return res.status(400).json(error)
-    }
-}
+    const pegawai = await prisma.pegawai.create({
+      data: {
+        nama,
+        nip,
+        noTelp,
+      },
+    });
+
+    res.status(200).json(pegawai);
+  } catch (error) {
+    res.status(400).json({ msg: error });
+  }
+};
 
 const getPegawaiById = async (req, res, next) => {
-    try{
-        const {id} = req.params;
-        const pegawai = await Pegawai.findOne({_id:id});
+  try {
+    const { id } = req.params;
+    const pegawai = await prisma.pegawai.findUnique({
+      where: { id: Number(id) },
+    });
 
-        if(!pegawai){
-            return createCustomError(`no data with id:${id}`, 404)
-        }
-        res.status(200).json(pegawai)
+    if (!pegawai) {
+      return createCustomError(`no data with id:${id}`, 404);
     }
-    catch(error){
-        return res.status(400).json({error: error.message})
-    }
-    
-}
+    res.status(200).json(pegawai);
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+};
 
 const deletePegawai = async (req, res, next) => {
-    try{
-        const {id} = req.params;
-        const deletedPegawai = await Pegawai.findOneAndDelete({_id:id});
-        if(!deletedPegawai){
-            return createCustomError(`no data with id:${id}`, 404)
-        }
-        res.status(200).json({message: "Data berhasil dihapus"})
+  try {
+    const { id } = req.params;
+    const deletedPegawai = await prisma.pegawai.delete({
+      where: { id: Number(id) },
+    });
+    if (!deletedPegawai) {
+      return createCustomError(`no data with id:${id}`, 404);
     }
-    catch(error){
-        return res.status(400).json({error: error.message})
-    }
-}
+    res.status(200).json({ message: "Data berhasil dihapus" });
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+};
 
-const updatePegawai = async(req,res,next) =>{
-    try{
-            const {id} = req.params
-    const {nama, nip, jabatan, unitKeja, email, noTelp} = req.body;
+const updatePegawai = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { nama, nip, noTelp } = req.body;
 
-    const updatedPegawai = await Pegawai.findOneAndUpdate(
-        {_id:id},
-        {nama, nip, jabatan, unitKeja, email, noTelp},
-        {
-            new:true,
-            runValidators:true
-        }
-    )
-    if(!updatePegawai){
-        return createCustomError(`no data with id:${id}`, 404)
-    }
+    const updatedPegawai = await prisma.pegawai.update({
+      where: { id: Number(id) },
+      data: {
+        nama,
+        nip,
+        noTelp,
+      },
+    });
 
-    res.status(200).json(updatedPegawai)
+    if (!updatedPegawai) {
+      return createCustomError(`no data with id:${id}`, 404);
     }
-    catch(error){
-        return res.status(400).json({error: error.message})
-    }
-}
+    res.status(200).json(updatedPegawai);
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+};
 
-module.exports = {
-    getPegawai,
-    createPegawai,
-    getPegawaiById,
-    deletePegawai,
-    updatePegawai
-}
+export {
+  getAllPegawai,
+  createPegawai,
+  getPegawaiById,
+  deletePegawai,
+  updatePegawai,
+};

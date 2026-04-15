@@ -1,8 +1,18 @@
-const express = require('express')
-const router = express.Router()
-const {getPegawai, createPegawai, getPegawaiById, deletePegawai, updatePegawai} = require('../controller/pegawaiController')
+import express from "express";
+const router = express.Router();
+import {
+  getAllPegawai,
+  createPegawai,
+  getPegawaiById,
+  deletePegawai,
+  updatePegawai,
+} from "../controller/pegawaiController.js";
 
-router.route('/').get(getPegawai).post(createPegawai)
-router.route('/:id').get(getPegawaiById).delete(deletePegawai).put(updatePegawai)
+router.route("/").get(getAllPegawai).post(createPegawai);
+router
+  .route("/:id")
+  .get(getPegawaiById)
+  .delete(deletePegawai)
+  .put(updatePegawai);
 
-module.exports = router
+export default router;

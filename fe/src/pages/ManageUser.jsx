@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import Layout from "../components/Layout";
-import { Link } from "react-router-dom";
 import api from "../lib/axios";
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
@@ -12,34 +11,35 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Link } from "react-router-dom";
 
-function Client() {
-  const [client, setClient] = useState([]);
+const ManageUser = () => {
+  const [users, setUsers] = useState([]);
 
-  const fetchClient = async () => {
+  const fetchUsers = async () => {
     try {
-      const res = await api.get("/client");
-      setClient(res.data);
+      const res = await api.get("/users");
+      setUsers(res.data);
     } catch (error) {
-      console.log("Error fetching clients:", error);
+      console.log("Error fetching users:", error);
     }
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm("Apakah anda yakin ingin menghapus client ini?")) {
+    if (window.confirm("Apakah anda yakin ingin menghapus user ini?")) {
       try {
-        await api.delete(`/client/${id}`);
-        toast.success("Data berhasil dihapus");
-        fetchClient();
+        await api.delete(`/users/${id}`);
+        toast.success("User berhasil dihapus");
+        fetchUsers();
       } catch (error) {
-        console.error("Error deleting client:", error);
-        toast.error("Gagal menghapus data");
+        console.error("Error deleting user:", error);
+        toast.error("Gagal menghapus user");
       }
     }
   };
 
   useEffect(() => {
-    fetchClient();
+    fetchUsers();
   }, []);
 
   return (
@@ -47,15 +47,16 @@ function Client() {
       <div className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
-            Data Anak Panti
+            Manage User
           </h1>
-          <p className="text-slate-500 mt-1">
-            Kelola data seluruh anak panti yang terdaftar.
-          </p>
+          <p className="text-slate-500 mt-1">Kelola data akses admin & user.</p>
         </div>
-        <Button asChild className="bg-blue-600 hover:bg-blue-700">
-          <Link to="/add-client" className="flex items-center gap-2">
-            <span className="text-xl leading-none">+</span> Tambah Anak Panti
+        <Button
+          asChild
+          className="bg-blue-600 hover:bg-blue-700 shadow-sm border-none text-white"
+        >
+          <Link to="/add-user" className="flex items-center gap-2">
+            <span className="text-xl leading-none">+</span> Tambah User
           </Link>
         </Button>
       </div>
@@ -69,16 +70,10 @@ function Client() {
                 Nama
               </TableHead>
               <TableHead className="font-semibold text-slate-600">
-                NIK
+                Email
               </TableHead>
               <TableHead className="font-semibold text-slate-600">
-                L/P
-              </TableHead>
-              <TableHead className="font-semibold text-slate-600">
-                No. Telp
-              </TableHead>
-              <TableHead className="font-semibold text-slate-600">
-                Alamat
+                Role
               </TableHead>
               <TableHead className="font-semibold text-slate-600 text-center">
                 Aksi
@@ -86,49 +81,39 @@ function Client() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {client.map((c, index) => (
+            {users.map((u, index) => (
               <TableRow
-                key={c._id || c.id}
+                key={u.id || index}
                 className="hover:bg-slate-50 transition-colors"
               >
                 <TableCell className="font-medium text-slate-500">
                   {index + 1}
                 </TableCell>
                 <TableCell className="font-semibold text-slate-800">
-                  {c.nama}
+                  {u.nama}
                 </TableCell>
-                <TableCell>{c.nik}</TableCell>
+                <TableCell>{u.email}</TableCell>
                 <TableCell>
                   <span
                     className={`px-2 py-1 rounded-md text-xs font-medium ${
-                      c.jenisKelamin === "Laki-Laki"
-                        ? "bg-blue-100 text-blue-700"
-                        : c.jenisKelamin === "Perempuan"
-                          ? "bg-pink-100 text-pink-700"
-                          : "bg-slate-100 text-slate-700"
+                      u.role === "ADMIN"
+                        ? "bg-purple-100 text-purple-700"
+                        : "bg-slate-100 text-slate-700"
                     }`}
                   >
-                    {c.jenisKelamin === "Laki-Laki"
-                      ? "Laki-Laki"
-                      : c.jenisKelamin === "Perempuan"
-                        ? "Perempuan"
-                        : c.jenisKelamin}
+                    {u.role}
                   </span>
-                </TableCell>
-                <TableCell>{c.noTelp}</TableCell>
-                <TableCell className="max-w-[200px] truncate" title={c.alamat}>
-                  {c.alamat}
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center justify-center gap-3">
                     <Link
-                      to={`/edit-client/${c.id || c._id}`}
+                      to={`/edit-user/${u.id}`}
                       className="text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors"
                     >
                       Edit
                     </Link>
                     <button
-                      onClick={() => handleDelete(c.id || c._id)}
+                      onClick={() => handleDelete(u.id)}
                       className="text-sm font-medium text-red-600 hover:text-red-800 transition-colors"
                     >
                       Hapus
@@ -137,13 +122,13 @@ function Client() {
                 </TableCell>
               </TableRow>
             ))}
-            {client.length === 0 && (
+            {users.length === 0 && (
               <TableRow>
                 <TableCell
-                  colSpan="7"
+                  colSpan="5"
                   className="h-32 text-center text-slate-500"
                 >
-                  Belum ada data client yang tersimpan.
+                  Belum ada data user yang tersimpan.
                 </TableCell>
               </TableRow>
             )}
@@ -152,6 +137,6 @@ function Client() {
       </div>
     </Layout>
   );
-}
+};
 
-export default Client;
+export default ManageUser;

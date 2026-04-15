@@ -1,79 +1,109 @@
-const Client = require("../models/clientModel")
-const {createCustomError} = require("../error/custom-error")
+import { prisma } from "../lib/prisma.js";
+import { createCustomError } from "../error/custom-error.js";
 
-const getClient = async(req, res) => {
-    try{
-        const client = await Client.find();
-        res.status(200).json(client)
-    }
-    catch(error){
-        res.status(400).json(error)
-    }
-}
+const getClient = async (req, res) => {
+  try {
+    const client = await prisma.anakPanti.findMany();
+    res.status(200).json(client);
+  } catch (error) {
+    res.status(400).json(error);
+  }
+};
 
 const createClient = async (req, res) => {
-    try{
-        const {nama, email, noTelp, alamat} = req.body;
+  try {
+    const {
+      nama,
+      alamat,
+      nik,
+      tanggalLahir,
+      jenisKelamin,
+      noTelp,
+      email,
+      disabilitas,
+    } = req.body;
 
-        const client = await new Client({nama, email, noTelp, alamat})
+    const client = await prisma.anakPanti.create({
+      data: {
+        nama,
+        alamat,
+        nik,
+        tanggalLahir,
+        jenisKelamin,
+        noTelp,
+        email,
+        disabilitas,
+      },
+    });
 
-        const savedClient = await client.save();
-        res.status(200).json(savedClient);
-    }
-    catch(error){
-        return res.status(400).json(error)
-    }
-}
+    res.status(200).json(client);
+  } catch (error) {
+    return res.status(400).json(error);
+  }
+};
 
 const getClientById = async (req, res, next) => {
-    const {id} = req.params;
-    const client = await Client.findOne({_id:id});
+  const { id } = req.params;
+  const client = await prisma.anakPanti.findUnique({
+    where: { id: Number(id) },
+  });
 
-    if(!client){
-        return createCustomError(`no data with id:${id}`, 404)
-    }
-    res.status(200).json(client)
-}
+  if (!client) {
+    return createCustomError(`no data with id:${id}`, 404);
+  }
+  res.status(200).json(client);
+};
 
 const deleteClient = async (req, res, next) => {
-    try{
-        const {id} = req.params;
-        const deletedClient = await Client.findOneAndDelete({_id:id});
-        if(!deletedClient){
-            return createCustomError(`no data with id:${id}`, 404)
-        }
-        res.status(200).json({message: "Data berhasil dihapus"})
+  try {
+    const { id } = req.params;
+    const deletedClient = await prisma.anakPanti.delete({
+      where: { id: Number(id) },
+    });
+    if (!deletedClient) {
+      return createCustomError(`no data with id:${id}`, 404);
     }
-    catch(error){
-        return res.status(400).json({error: error.message})
-    }
-}
+    res.status(200).json({ message: "Data berhasil dihapus" });
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+};
 
-const updateClient = async(req,res,next) =>{
-    try{
-            const {id} = req.params
-    const {nama, email, noTelp, alamat} = req.body;
+const updateClient = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const {
+      nama,
+      alamat,
+      nik,
+      tanggalLahir,
+      jenisKelamin,
+      noTelp,
+      email,
+      disabilitas,
+    } = req.body;
 
-    const updatedClient = await Client.findOneAndUpdate(
-        {_id:id},
-        {nama, email, noTelp, alamat},
-        {new: true, runValidators: true}
-    )
+    const updatedClient = await prisma.anakPanti.update({
+      where: { id: Number(id) },
+      data: {
+        nama,
+        alamat,
+        nik,
+        tanggalLahir,
+        jenisKelamin,
+        noTelp,
+        email,
+        disabilitas,
+      },
+    });
 
-    if(!updatedClient){
-        return createCustomError(`no data with id:${id}`, 404)
+    if (!updatedClient) {
+      return createCustomError(`no data with id:${id}`, 404);
     }
-    res.status(200).json(updatedClient)
-    }
-    catch(error){
-        return res.status(400).json({error: error.message})
-    }
-}
+    res.status(200).json(updatedClient);
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+};
 
-module.exports = {
-    getClient,
-    createClient,
-    getClientById,
-    deleteClient,
-    updateClient
-}
+export { getClient, createClient, getClientById, deleteClient, updateClient };
