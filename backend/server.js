@@ -12,13 +12,7 @@ import userRoute from "./routes/userRoute.js";
 const app = express();
 
 app.use(express.json());
-app.use(
-  cors({
-    origin: "*",
-    allowedHeaders: "*",
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-  }),
-);
+app.use(cors());
 
 // routes
 app.use("/api/auth", authRoutes);
